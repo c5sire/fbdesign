@@ -24,8 +24,8 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
                              series = 2 , random = TRUE, first = FALSE, cont = FALSE,
                              variables = NULL){
   design = stringr::str_extract(design, "([A-Z2]{2,10})")
-  if (design == "LD" && !(length(trt1) %% r == 0 ))
-    stop("Incorrect paramter combinations for LD design.")
+  # if (design == "LD" && !(length(trt1) %% r == 0 ))
+  #   stop("Incorrect paramter combinations for LD design.")
   fb <- switch(design,
      LSD = agricolae::design.lsd(trt1, series, randomization = random, first = first),
      RCBD = agricolae::design.rcbd(trt1, r, series, randomization = random, first = first),
@@ -80,6 +80,10 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = "BLOCK"
     names(fb$book)[4] = toupper(trt1_label)
+    sk = list()
+    ns = length(fb$sketch)
+    for(i in 1:ns) sk[[i]] = fb$sketch[[i]]
+    fb$sketch = sk
   }
 
   out = fb$book

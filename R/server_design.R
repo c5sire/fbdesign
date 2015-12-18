@@ -78,11 +78,12 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
       crop_id = tbl[tbl$crop_name == input$designFieldbook_crop, "crop_id"]
       program_id = input$designFieldbook_program
       phase_id = input$designFieldbook_phase
+      module_id = input$designFieldbook_module
       ayear = input$designFieldbook_year
       amonth = stringr::str_pad(input$designFieldbook_month, width = 2, side = "left",
                                 pad = "0")
       sites = input$designFieldbook_sites
-      out = paste0(crop_id, program_id, phase_id, ayear, amonth, "_", sites)
+      out = paste0(crop_id, program_id, phase_id, module_id, ayear, amonth, "_", sites)
       paste(out, collapse = ", ")
     }
   })
@@ -99,7 +100,44 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
   output$fbDesign_variables <- shiny::renderUI({
     crp <- input$designFieldbook_crop
     mdl <- fbmodule::list_modules(crp)
+    ids <- unlist(stringr::str_extract_all(mdl, "([A-Z]{2})"))
+    vls <- mdl
+    mdl = as.list(ids)
+    names(mdl) <- vls
+
+    #print(mdl)
     shiny::selectInput("designFieldbook_module", label = "Assay (fieldbook module):",
                        choices = mdl, selected = 1)
   })
+
+  observeEvent(input$fbDesign_create, {
+    #print("Heyoo")
+    try({
+    crp <- input$designFieldbook_crop
+    # print(crp)
+    # print(fbglobal::fname_material_lists(crp))
+    # print(input$designFieldbook_trt1)
+
+    fn =file.path(fbglobal::fname_material_lists(crp), input$designFieldbook_trt1)
+    # print(fn)
+    load(fn)
+    trt1 = table_materials$institutional_number
+
+    mdl = input$designFieldbook_module
+    mdl = stringr::str_extract(mdl, "([A-Z]{2})")[[1]]
+    vars = fbmodule::get_module_table(crp)
+    vars = vars[vars$module == mdl, "variable"]
+    # print(trt1)
+    # print(input$designFieldbook)
+    fb = design_fieldbook(design = input$designFieldbook,
+                     trt1 = trt1, trt1_label = "GENOTYPE",
+                     r = as.integer(input$designFieldbook_r),
+                     k = as.integer(input$designFieldbook_k),
+                     first = input$designFieldbook_first,
+                     variables = vars)
+    print(fb)
+    })
+  })
+
+
 }

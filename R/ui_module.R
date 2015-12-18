@@ -31,7 +31,7 @@ design_conditional_panels <- function(){
     ),
     shiny::conditionalPanel(
       "input.designFieldbook == 'LD'", # TODO: ab - factorial, split
-      shiny::selectInput("designFieldbook_r", "Replications:", 2:3, 2 )
+      shiny::selectInput("designFieldbook_r", "Replications (r):", 2:3, 2 )
     ),
     shiny::conditionalPanel(
       "input.designFieldbook == 'BIBD'",
@@ -174,7 +174,10 @@ designDialog <- function(){
                                        ),
                                        shiny::tabPanel("Soil", value = "fbDesign_soil"
                                        )
-                   )
+                   ),
+                   shinyBS::bsButton("fbDesign_create", "Create")
+                   # ,
+                   # shiny::submitButton()
   )
   # shiny::textOutput("new_list_success"),
   # shiny::actionButton("doListButton", "Create new list!")
