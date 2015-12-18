@@ -1,22 +1,22 @@
 
 design_choices <- c(
-  "Randomized Complete Block Design (RCBD)" = "RCBD",
-  "Completely Randomized Design (CRD)" = "CRD",
-  "Latin Square Design (LSD)" = "LSD",
-  #"Split-plot Design (SPPD)" = "SPPD",
-  #"Strip-plot Design (STPD)" = "STPD",
-  #"Augmented Block Design (ABD)" = "ABD",
-  "Balanced Incomplete Block Design (BIBD)" = "BIBD",
-  "Graeco-Latin Design (GLD)" = "GLD",
-  "Youden Design (YD)" = "YD",
-  "Cyclic Design (CD)" = "CD",
-  "Lattice Design (LD)" = "LD" ,
-  "Alpha Design (AD)" = "AD"#,
-  #"Augmented Partially Replicated Design (APRD)" = "APRD",
-  #"Factorial Design (F2SPPD)" = "F2SPPD",
-  #"North Carolina Design I" = "NCI",
-  #"North Carolina Design II" = "NCII",
-  #"North Carolina Design III" = "NCIII"
+  "Randomized Complete Block Design (RCBD)" = "RCBD"#,
+  #"Completely Randomized Design (CRD)" = "CRD",
+  #"Latin Square Design (LSD)" = "LSD",
+  ##"Split-plot Design (SPPD)" = "SPPD",
+  ##"Strip-plot Design (STPD)" = "STPD",
+  ##"Augmented Block Design (ABD)" = "ABD",
+  # "Balanced Incomplete Block Design (BIBD)" = "BIBD",
+  # "Graeco-Latin Design (GLD)" = "GLD",
+  # "Youden Design (YD)" = "YD",
+  # "Cyclic Design (CD)" = "CD",
+  # "Lattice Design (LD)" = "LD" ,
+  # "Alpha Design (AD)" = "AD"#,
+  # #"Augmented Partially Replicated Design (APRD)" = "APRD",
+  # #"Factorial Design (F2SPPD)" = "F2SPPD",
+  # #"North Carolina Design I" = "NCI",
+  # #"North Carolina Design II" = "NCII",
+  # #"North Carolina Design III" = "NCIII"
 )
 
 design_conditional_panels <- function(){
@@ -70,11 +70,11 @@ design_conditional_panels <- function(){
       ",
       shiny::checkboxInput("designFieldbook_first", "Randomize first repetition", TRUE )
     )
-    # ,
-    # shiny::conditionalPanel(
-    #   "input.designFieldbook == 'RCBD'",
-    #   checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
-    # )
+    ,
+    shiny::conditionalPanel(
+      "input.designFieldbook == 'RCBD'",
+      shiny::checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
+    )
 
 
 
@@ -99,7 +99,7 @@ designDialog <- function(){
                      shiny::textOutput("fbDesign_id")
                    ),
                    shiny::tabsetPanel( id = "fbDesignNav",
-                                       shiny::tabPanel("Crop", value = "crop",
+                                       shiny::tabPanel("Crop", value = "crop", icon = shiny::icon("leaf"),
                                                 shiny::uiOutput("fbDesign_crop", inline = TRUE),
                                                 # Breeding program
                                                 shiny::uiOutput("fbDesign_program", inline = TRUE),
@@ -109,7 +109,7 @@ designDialog <- function(){
                                                 shiny::uiOutput("fbDesign_variables", inline = TRUE)
 
                                        ),
-                                       shiny::tabPanel("Project", value = "project",
+                                       shiny::tabPanel("Project", value = "project", icon = shiny::icon("book"),
                                                 #shiny::uiOutput("fbDesign_project", inline = TRUE),
                                                 shiny::textInput("fbDesign_project_name", "Project name"),
                                                 shiny::textInput("fbDesign_project_objective", "Project objective"),
@@ -120,7 +120,7 @@ designDialog <- function(){
                                        shiny::tabPanel("Plants", value = "plants", icon = shiny::icon("star"),
                                                 shiny::uiOutput("designFieldbook_genotypes", inline = TRUE)
                                        ),
-                                       shiny::tabPanel("Statistical design", value = "design",
+                                       shiny::tabPanel("Statistical design", value = "design", icon = shiny::icon("pie-chart"),
                                                        shiny::selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
                                                        shiny::checkboxInput("designFieldbook_random", "Use randomization", TRUE),
                                                 design_conditional_panels()
@@ -129,7 +129,7 @@ designDialog <- function(){
                                                 # genetic designs
                                                 # check parameter combinations
                                        ),
-                                       shiny::tabPanel("Labeling", value = "labeling",
+                                       shiny::tabPanel("Labeling", value = "labeling",icon = shiny::icon("tags"),
                                                        shiny::checkboxInput("designFieldbook_zigzag", "Zigzag", TRUE),
                                                        shiny::radioButtons("designFieldbook_serie", "Label series:",
                                                              #get_series_labels(), "101, 102, ...", #get_series_labels()[[2]],
@@ -143,7 +143,7 @@ designDialog <- function(){
 
                                        ),
 
-                                       shiny::tabPanel("Environment", value = 'environment',
+                                       shiny::tabPanel("Environment", value = 'environment', icon = shiny::icon("recycle"),
                                                 # Year
                                                 shiny::selectInput("designFieldbook_year", "Year of sowing/planting", 1971:2020, 2015),
                                                 # Planting month
@@ -151,31 +151,50 @@ designDialog <- function(){
                                                 # Location
                                                 shiny::uiOutput("fbDesign_countrySite", inline = TRUE, width = 500),
                                                 shiny::radioButtons("fbDesign_environment_type", "Environment type",
-                                                                    list("Field" = "field",
-                                                                         "Farmers field" = "farmers_field",
-                                                                         "Greenhouse" = "greenhouse",
-                                                                         "Screenhouse" = "screenhouse"
+                                                                    list("Field" = "field"
+                                                                         #,
+                                                                         # "Farmers field" = "farmers_field"
+                                                                         # ,
+                                                                         # "Greenhouse" = "greenhouse",
+                                                                         # "Screenhouse" = "screenhouse"
                                                                     ), inline = TRUE
                                                 ),
                                                 shiny::checkboxInput("fbDesign_weather_cb", "Register weather data"),
                                                 shiny::checkboxInput("fbDesign_soil_cb", "Register soil data")
                                        ),
-                                       shiny::tabPanel("Field", value = "fbDesign_field"
+                                       shiny::tabPanel("Field", value = "fbDesign_field", icon = shiny::icon("male"),
+                                          shiny::numericInput("fbDesign_field_size (ha)",
+                                                              "Field size", 1, 1, 100)
                                        ),
                                        shiny::tabPanel("Farmers field", value = "fbDesign_farmers_field"
                                        ),
-                                       shiny::tabPanel("Greenhouse", value = "fbDesign_greenhouse"
+                                       # shiny::tabPanel("Greenhouse", value = "fbDesign_greenhouse"
+                                       # ),
+                                       # shiny::tabPanel("Screenhouse", value = "fbDesign_screenhouse"
+                                       # ),
+                                       shiny::tabPanel("Planting", value = "fbDesign_planting",
+                                          shiny::numericInput("fbDesign_nplants",
+                                                              "Number of plants per plot", 30, 1, 100),
+                                          shiny::numericInput("fbDesign_nplantsrow",
+                                                              "Number of plants per row", 30, 1, 100),
+                                          shiny::numericInput("fbDesign_psize",
+                                                              "Plot size", 30, 1, 100),
+                                          shiny::numericInput("fbDesign_distPlants",
+                                                              "Distance between plants", .3, .1, 1),
+                                          shiny::numericInput("fbDesign_distRows",
+                                                              "Distance between rows", .3, .1, 1)
                                        ),
-                                       shiny::tabPanel("Screenhouse", value = "fbDesign_screenhouse"
-                                       ),
-                                       shiny::tabPanel("Planting", value = "fbDesign_planting"
-                                       ),
-                                       shiny::tabPanel("Weather", value = "fbDesign_weather"
-                                       ),
-                                       shiny::tabPanel("Soil", value = "fbDesign_soil"
+                                       # shiny::tabPanel("Weather", value = "fbDesign_weather"
+                                       # ),
+                                       # shiny::tabPanel("Soil", value = "fbDesign_soil"
+                                       # ),
+                                       shiny::tabPanel("Book", value = "fbDesign_book",
+                                                       rhandsontable::rHandsontableOutput("fbDesign_table")
                                        )
                    ),
-                   shinyBS::bsButton("fbDesign_create", "Create")
+                   shinyBS::bsButton("fbDesign_draft", "Update draft (see tab: book)" ),
+                   shinyBS::bsButton("fbDesign_create", "Add empty fieldbook"),
+                   shinyBS::bsAlert("alert_fb_done")
                    # ,
                    # shiny::submitButton()
   )

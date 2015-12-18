@@ -7,7 +7,7 @@
 design_fieldbook(design = "(RCBD)", trt1 = letters[1:5], trt2 = NULL,
   r = 2, k = 2, trt1_label = "trt1", trt2_label = "trt2", maxRep = 20,
   series = 2, random = TRUE, first = FALSE, cont = FALSE,
-  variables = NULL)
+  zigzag = FALSE, variables = NULL)
 }
 \arguments{
 \item{design}{a statistical design}
@@ -33,6 +33,8 @@ design_fieldbook(design = "(RCBD)", trt1 = letters[1:5], trt2 = NULL,
 \item{first}{to randomize or not the first repetition}
 
 \item{cont}{continuouse labeling}
+
+\item{zigzag}{order plot in serpentine}
 
 \item{variables}{set of variables}
 }

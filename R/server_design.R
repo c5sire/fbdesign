@@ -72,7 +72,7 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
     shiny::selectInput("designFieldbook_trt1", "Genotype list", chc, width = 400)
   })
 
-  output$fbDesign_id <- shiny::renderText({
+  fbdesign_id <- shiny::reactive({
     if (!is.null(input$designFieldbook_crop)) {
       tbl = fbcrops::get_crop_table()
       crop_id = tbl[tbl$crop_name == input$designFieldbook_crop, "crop_id"]
@@ -88,12 +88,16 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
     }
   })
 
+  output$fbDesign_id <- shiny::renderText({
+    fbdesign_id()
+  })
+
   output$fbDesign_countrySite <- shiny::renderUI({
     locs = fbsites::get_site_table()
     if (nrow(locs) > 0 ) {
       chc = locs$shortn
       shiny::selectizeInput("designFieldbook_sites", label = "Field locations:",
-                            choices = chc, selected = 1,  multiple = TRUE)
+                            choices = chc, selected = 1,  multiple = FALSE)
     }
   })
 
@@ -110,34 +114,72 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
                        choices = mdl, selected = 1)
   })
 
-  observeEvent(input$fbDesign_create, {
-    #print("Heyoo")
+  fbdraft <- shiny::reactive({
     try({
-    crp <- input$designFieldbook_crop
-    # print(crp)
-    # print(fbglobal::fname_material_lists(crp))
-    # print(input$designFieldbook_trt1)
+      withProgress(message = 'Calculation in progress',
+                   detail = 'This may take a while...', value = 0, {
+                     incProgress(3/15)
+                     crp <- input$designFieldbook_crop
+                     # print(crp)
+                     # print(fbglobal::fname_material_lists(crp))
+                     # print(input$designFieldbook_trt1)
+                     incProgress(3/15)
+                     fn =file.path(fbglobal::fname_material_lists(crp), input$designFieldbook_trt1)
+                     # print(fn)
+                     load(fn)
+                     trt1 = table_materials$institutional_number
+                     incProgress(3/15)
+                     mdl = input$designFieldbook_module
+                     mdl = stringr::str_extract(mdl, "([A-Z]{2})")[[1]]
+                     vars = fbmodule::get_module_table(crp)
+                     vars = vars[vars$module == mdl, "variable"]
+                     # print(trt1)
+                     # print(input$designFieldbook)
+                     incProgress(3/15)
 
-    fn =file.path(fbglobal::fname_material_lists(crp), input$designFieldbook_trt1)
-    # print(fn)
-    load(fn)
-    trt1 = table_materials$institutional_number
+                     fb = design_fieldbook(design = input$designFieldbook,
+                                           trt1 = trt1, trt1_label = "GENOTYPE",
+                                           r = as.integer(input$designFieldbook_r),
+                                           k = as.integer(input$designFieldbook_k),
+                                           first = as.logical(input$designFieldbook_first),
+                                           cont = as.logical(input$designFieldbook_cont),
+                                           series = as.integer(input$designFieldbook_serie),
+                                           zigzag = as.logical(input$designFieldbook_zigzag),
+                                           variables = vars)
+                     #print(fb)
+                     fb[, 1] = as.integer(fb[, 1])
 
-    mdl = input$designFieldbook_module
-    mdl = stringr::str_extract(mdl, "([A-Z]{2})")[[1]]
-    vars = fbmodule::get_module_table(crp)
-    vars = vars[vars$module == mdl, "variable"]
-    # print(trt1)
-    # print(input$designFieldbook)
-    fb = design_fieldbook(design = input$designFieldbook,
-                     trt1 = trt1, trt1_label = "GENOTYPE",
-                     r = as.integer(input$designFieldbook_r),
-                     k = as.integer(input$designFieldbook_k),
-                     first = input$designFieldbook_first,
-                     variables = vars)
-    print(fb)
+                    fb
+                    } )
     })
   })
 
+
+  shiny::observeEvent(input$fbDesign_draft, {
+    fb = fbdraft()
+    output$fbDesign_table <- rhandsontable::renderRHandsontable({
+      rhandsontable::rhandsontable(fb, readOnly = T)
+    })
+  })
+
+  shiny::observeEvent(input$fbDesign_create, {
+    #print("Heyoo")
+    fb = fbdraft()
+    try({
+      fn = paste0(fbdesign_id(), ".rda")
+      fp = file.path(fbglobal::fname_fieldbooks(input$designFieldbook_crop), fn)
+      # print(fn)
+      # print(fp)
+      # print(str(fb))
+      # print(head(fb))
+      if(!file.exists(fp)) {
+        saveRDS(fb, fp)
+        values[["ph_fb_list"]] = NULL
+        shinyBS::createAlert(session, "alert_fb_done", "fbdoneAlert", title = "Success",
+                             content = "Fieldbook created.", append = FALSE)
+      }
+
+    })
+  })
 
 }

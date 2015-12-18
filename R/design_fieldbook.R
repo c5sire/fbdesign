@@ -9,6 +9,7 @@
 #' @param k number of blocks
 #' @param series label series type
 #' @param random to randomize or not
+#' @param zigzag order plot in serpentine
 #' @param first to randomize or not the first repetition
 #' @param maxRep maximum number of repetitions
 #' @param cont continuouse labeling
@@ -22,6 +23,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
                              trt2_label = "trt2",
                              maxRep = 20,
                              series = 2 , random = TRUE, first = FALSE, cont = FALSE,
+                             zigzag = FALSE,
                              variables = NULL){
   design = stringr::str_extract(design, "([A-Z2]{2,10})")
   # if (design == "LD" && !(length(trt1) %% r == 0 ))
@@ -43,19 +45,24 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
   #names(fb$book)[nc] = toupper(trt1_label)
 
   if (design == "RCBD") {
+    if(zigzag) fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = toupper(trt1_label)
+
   }
-  if (design == "LSD" | design == "YD") {
+  if (design == "LSD") {
+    if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     fb$book = fb$book[, c(1, 2, 4)]
     names(fb$book)[3] = toupper(trt1_label)
   }
   if (design == "CRD") {
+    if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = toupper(trt1_label)
   }
   if (design == "GLD") {
+    if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     fb$book = fb$book[, c(1, 2, 4, 5)]
     names(fb$book)[3] = toupper(trt1_label)
@@ -67,6 +74,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     names(fb$book)[3] = toupper(trt1_label)
   }
   if (design == "BIBD") {
+    if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "BLOCK"
     names(fb$book)[3] = toupper(trt1_label)
   }
@@ -77,6 +85,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     names(fb$book)[4] = toupper(trt1_label)
   }
   if (design == "CD") {
+    if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = "BLOCK"
     names(fb$book)[4] = toupper(trt1_label)
