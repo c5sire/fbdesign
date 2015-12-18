@@ -6,12 +6,12 @@ design_choices <- c(
   #"Split-plot Design (SPPD)" = "SPPD",
   #"Strip-plot Design (STPD)" = "STPD",
   #"Augmented Block Design (ABD)" = "ABD",
-  #"Balanced Incomplete Block Design (BIBD)" = "BIBD",
+  "Balanced Incomplete Block Design (BIBD)" = "BIBD",
   "Graeco-Latin Design (GLD)" = "GLD",
   "Youden Design (YD)" = "YD",
-  #"Cyclic Design (CD)" = "CD",
-  "Lattice Design (LD)" = "LD" #,
-  #"Alpha Design (AD)" = "AD",
+  "Cyclic Design (CD)" = "CD",
+  "Lattice Design (LD)" = "LD" ,
+  "Alpha Design (AD)" = "AD"#,
   #"Augmented Partially Replicated Design (APRD)" = "APRD",
   #"Factorial Design (F2SPPD)" = "F2SPPD",
   #"North Carolina Design I" = "NCI",
@@ -35,8 +35,9 @@ design_conditional_panels <- function(){
     ),
     shiny::conditionalPanel(
       "input.designFieldbook == 'BIBD'",
-      shiny::selectInput("designFieldbook_r", "Replications (r):", c(3,6,9,12,15,18), 3 ),
-      shiny::selectInput("designFieldbook_k", "Block size (k):", 3:300, 3 ),
+      #shiny::selectInput("designFieldbook_r", "Replications (r):", c(3,6,9,12,15,18), 3 ),
+      shiny::selectInput("designFieldbook_k", "Block size (k):", 3:12, 3 )
+      ,
       shiny::selectInput("designFieldbook_maxR", "Repetition maximum (k):", 3:30, 20 )
     ) ,
     shiny::conditionalPanel(
@@ -53,6 +54,14 @@ design_conditional_panels <- function(){
       shiny::selectInput("designFieldbook_r", "Replications (r):", 2:4, 2 ),
       shiny::selectInput("designFieldbook_k", "Block size (k):", 3:300,3 )
     ),
+    shiny::conditionalPanel(
+      "input.designFieldbook == 'CD'",
+      # TODO do server side checking of permitted combinations (based on number of treatments)
+      # number of treatments 6:30
+      shiny::selectInput("designFieldbook_r", "Replications (r):", 2:10, 2 ),
+      shiny::selectInput("designFieldbook_k", "Block size (k):", 2:10,3 )
+    ),
+
     shiny::conditionalPanel(
       "input.designFieldbook == 'LSD' |
       input.designFieldbook == 'RCBD' |

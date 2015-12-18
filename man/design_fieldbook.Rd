@@ -4,19 +4,27 @@
 \alias{design_fieldbook}
 \title{Generic fieldbook design function}
 \usage{
-design_fieldbook(design, trt1, trt2 = NULL, r = 2, k, series = 2,
-  random = TRUE, first = FALSE, cont = FALSE, variables = NULL)
+design_fieldbook(design = "(RCBD)", trt1 = letters[1:5], trt2 = NULL,
+  r = 2, k = 2, trt1_label = "trt1", trt2_label = "trt2", maxRep = 20,
+  series = 2, random = TRUE, first = FALSE, cont = FALSE,
+  variables = NULL)
 }
 \arguments{
 \item{design}{a statistical design}
 
-\item{trt1}{label of treatment one; mostly 'GENOTYPE'}
+\item{trt1}{vector treatment one}
 
-\item{trt2}{label of second treatment; a controlled factor}
+\item{trt2}{vector second treatment; a controlled factor}
 
 \item{r}{number of repetitions}
 
 \item{k}{number of blocks}
+
+\item{trt1_label}{string}
+
+\item{trt2_label}{string}
+
+\item{maxRep}{maximum number of repetitions}
 
 \item{series}{label series type}
 
