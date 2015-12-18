@@ -1,6 +1,6 @@
 
-
 library(shiny)
+library(shinyjs)
 library(shinydashboard)
 library(shinyFiles)
 library(rhandsontable)
@@ -97,11 +97,12 @@ list(
      input.designFieldbook == 'BIBD'
     ",
     checkboxInput("designFieldbook_first", "Randomize first repetition", TRUE )
-  ),
-  shiny::conditionalPanel(
-    "input.designFieldbook == 'RCBD'",
-    checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
   )
+  # ,
+  # shiny::conditionalPanel(
+  #   "input.designFieldbook == 'RCBD'",
+  #   checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
+  # )
 
 
 
@@ -111,49 +112,101 @@ list(
 
 designDialog <- function(){
   shinyBS::bsModal("bsModalFbDesignParam", "Design fieldbook",
+
      #paste0("input.menu == '",name,"'"),
      "butNewFieldbook", size = "large",
-      shiny::tabsetPanel(
-        tabPanel("Context",
+     # following line to allow datepicker in modal dialog:
+     # http://stackoverflow.com/questions/31920327/r-shinybs-model-and-dateinput
+     tags$style( type = "text/css", ".datepicker{z-index: 1100 !important;}"),
+     # use shinyjs & toggle commnand to hide/unhide tabpanels!
+     shinyjs::useShinyjs(),
+     shiny::wellPanel(
+
+
+         shiny::HTML("<b>Fieldbook identifiers:</b>"),
+         shiny::textOutput("fbDesign_id")
+       ),
+      shiny::tabsetPanel( id = "fbDesignNav",
+        tabPanel("Crop", value = "crop",
          shiny::uiOutput("fbDesign_crop", inline = TRUE),
          # Breeding program
          shiny::uiOutput("fbDesign_program", inline = TRUE),
          # Breeding phase
          shiny::uiOutput("fbDesign_phase", inline = TRUE),
+         shiny::uiOutput("fbDesign_factor2", inline = TRUE),
+         shiny::uiOutput("fbDesign_variables", inline = TRUE)
 
-         shiny::uiOutput("designFieldbook_genotypes", inline = TRUE),
+         ),
+        tabPanel("Project", value = "project",
+         #shiny::uiOutput("fbDesign_project", inline = TRUE),
+         shiny::textInput("fbDesign_project_name", "Project name"),
+         shiny::textInput("fbDesign_project_objective", "Project objective"),
+         #shiny::textInput("fbDesign_comments", "Project comments"),
+         shiny::dateRangeInput("fbDesign_project_time_line", "Date range")
+
+                 ),
+        tabPanel("Plants", value = "plants", icon = shiny::icon("star"),
+           shiny::uiOutput("designFieldbook_genotypes", inline = TRUE)
+        ),
+        tabPanel("Statistical design", value = "design",
+                 selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
+                 checkboxInput("designFieldbook_random", "Use randomization", TRUE),
+                 design_conditional_panels()
+                 # 2nd factor from ontology
+                 # 2nd genotype list of checks
+                 # genetic designs
+                 # check parameter combinations
+        ),
+        tabPanel("Labeling", value = "labeling",
+                 checkboxInput("designFieldbook_zigzag", "Zigzag", TRUE),
+                 radioButtons("designFieldbook_serie", "Label series:",
+                              #get_series_labels(), "101, 102, ...", #get_series_labels()[[2]],
+                              1:3, 2,
+                              inline = TRUE)
+                 ,
+                 shiny::conditionalPanel(
+                   "input.designFieldbook == 'RCBD'",
+                   checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
+                 )
+
+        ),
+
+        tabPanel("Environment", value = 'environment',
          # Year
          shiny::selectInput("designFieldbook_year", "Year of sowing/planting", 1971:2020, 2015),
-
          # Planting month
          shiny::selectInput("designFieldbook_month", "Month of sowing/planting", 1:12),
          # Location
          shiny::uiOutput("fbDesign_countrySite", inline = TRUE, width = 500),
-         # Canonical name
-         shiny::HTML("<b>Fieldbook identifiers:</b>"),
-         shiny::textOutput("fbDesign_id")
+         shiny::radioButtons("fbDesign_environment_type", "Environment type",
+                             list("Field" = "field",
+                                  "Farmers field" = "farmers_field",
+                                  "Greenhouse" = "greenhouse",
+                                  "Screenhouse" = "screenhouse"
+                                    ), inline = TRUE
+         ),
+         shiny::checkboxInput("fbDesign_weather_cb", "Register weather data"),
+         shiny::checkboxInput("fbDesign_soil_cb", "Register soil data")
         ),
-        tabPanel("Statistical design",
-         selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
-         checkboxInput("designFieldbook_zigzag", "Zigzag", TRUE),
-         radioButtons("designFieldbook_serie", "Label series:",
-                      #get_series_labels(), "101, 102, ...", #get_series_labels()[[2]],
-                      1:3, 2,
-                      inline = TRUE),
-         checkboxInput("designFieldbook_random", "Use randomization", TRUE),
-         design_conditional_panels()
-         # 2nd factor from ontology
-         # 2nd genotype list of checks
-         # genetic designs
-         # check parameter combinations
+        tabPanel("Field", value = "fbDesign_field"
         ),
-        tabPanel("Variable selections",
-          uiOutput("fbDesign_variables")
+        tabPanel("Farmers field", value = "fbDesign_farmers_field"
+        ),
+        tabPanel("Greenhouse", value = "fbDesign_greenhouse"
+        ),
+        tabPanel("Screenhouse", value = "fbDesign_screenhouse"
+        ),
+        tabPanel("Planting", value = "fbDesign_planting"
+        ),
+        tabPanel("Weather", value = "fbDesign_weather"
+        ),
+        tabPanel("Soil", value = "fbDesign_soil"
         )
       )
+     )
      # shiny::textOutput("new_list_success"),
      # shiny::actionButton("doListButton", "Create new list!")
-  )
+
 }
 
 
@@ -212,8 +265,26 @@ ui <- dashboardPage(skin = "yellow",
 server <- function(input, output, session){
   #values = shiny::reactiveValues()
   output$fbDesign_crop <- shiny::renderUI({
-    chc = fbcrops::get_crop_table()$crop_name
+    ct = fbcrops::get_crop_table()
+    chc = as.list(ct$crop_name)
+    nms = paste0(ct$crop_name, " (", ct$crop_id, ")")
+    names(chc) = nms
     shiny::selectInput("designFieldbook_crop", "Crop", chc)
+  })
+
+  observe({
+    shinyjs::toggle(condition = input$fbDesign_environment_type == "field",
+                    selector = "#fbDesignNav li a[data-value=fbDesign_field]")
+    shinyjs::toggle(condition = input$fbDesign_environment_type == "farmers_field",
+                    selector = "#fbDesignNav li a[data-value=fbDesign_farmers_field]")
+    shinyjs::toggle(condition = input$fbDesign_environment_type == "greenhouse",
+                    selector = "#fbDesignNav li a[data-value=fbDesign_greenhouse]")
+    shinyjs::toggle(condition = input$fbDesign_environment_type == "screenhouse",
+                    selector = "#fbDesignNav li a[data-value=fbDesign_screenhouse]")
+    shinyjs::toggle(condition = input$fbDesign_weather_cb,
+                    selector = "#fbDesignNav li a[data-value=fbDesign_weather]")
+    shinyjs::toggle(condition = input$fbDesign_soil_cb,
+                    selector = "#fbDesignNav li a[data-value=fbDesign_soil]")
   })
 
   output$fbDesign_program <- shiny::renderUI({
@@ -228,7 +299,7 @@ server <- function(input, output, session){
         lbl = paste0(prg$program_name, " (", prg$program_id, ")" )
         chc = as.list(prg$program_id)
         names(chc) = lbl
-        shiny::selectInput("designFieldbook_program", "Program", chc)
+        shiny::selectInput("designFieldbook_program", "Investigation", chc)
       }
     }
   })
@@ -245,7 +316,7 @@ server <- function(input, output, session){
         lbl = paste0(prg$program_stage_name, " (", prg$program_stage_id, ")" )
         chc = as.list(prg$program_stage_id)
         names(chc) = lbl
-        shiny::selectInput("designFieldbook_phase", "Program stage", chc)
+        shiny::selectInput("designFieldbook_phase", "Study", chc)
       }
     }
   })
@@ -277,6 +348,13 @@ server <- function(input, output, session){
       shiny::selectizeInput("designFieldbook_sites", label = "Field locations:",
                             choices = chc, selected = 1,  multiple = TRUE)
     }
+  })
+
+  output$fbDesign_variables <- shiny::renderUI({
+    crp <- input$designFieldbook_crop
+    mdl <- fbmodule::list_modules(crp)
+    shiny::selectInput("designFieldbook_module", label = "Assay (fieldbook module):",
+                          choices = mdl, selected = 1)
   })
 
 
