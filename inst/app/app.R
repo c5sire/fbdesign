@@ -1,3 +1,4 @@
+# obsolote as of Dec. 18th, 2015
 
 library(shiny)
 library(shinyjs)

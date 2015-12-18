@@ -29,7 +29,7 @@ randomize.design = function(design="(CRD)",
 		seed = 0,
 		randM="Super-duper"
 ) {
-  library(stringr)
+  #library(stringr)
 abb=lbls
 diseno = NULL
 if (str_detect(design,"(UDNR)")){

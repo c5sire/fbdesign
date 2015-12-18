@@ -12,7 +12,14 @@ Suggests: shiny,
   rhandsontable,
   shinyBS,
   agricolae,
-  stringr
+  stringr,
+  fbglobal,
+  fbcrops,
+  fbmaterials,
+  fbmodule,
+  fbprogram,
+  fbprstages,
+  fbsites
 License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
