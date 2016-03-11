@@ -26,6 +26,9 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
                              zigzag = FALSE,
                              variables = NULL){
   design = stringr::str_extract(design, "([A-Z2]{2,10})")
+
+  ids = trt1
+  trt1 = 1:length(trt1)
   # if (design == "LD" && !(length(trt1) %% r == 0 ))
   #   stop("Incorrect paramter combinations for LD design.")
   fb <- switch(design,
@@ -46,8 +49,15 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
 
   if (design == "RCBD") {
     if(zigzag) fb$book = agricolae::zigzag(fb)
+    BLOCK = rep(1, nrow(fb$book))
     names(fb$book)[2] = "REP"
-    names(fb$book)[3] = toupper(trt1_label)
+    #names(fb$book)[3] = toupper(trt1_label)
+    names(fb$book)[3] = "ENTRY"
+    IDS = ids[as.numeric(unlist(fb$book[3]))]
+
+    fb$book = cbind(BLOCK, fb$book)
+    fb$book = cbind(fb$book, IDS)
+    names(fb$book)[5] = toupper(trt1_label)
 
   }
   if (design == "LSD") {
@@ -70,8 +80,8 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
   }
   if (design == "YD") {
     names(fb$book)[2] = "REP"
-    names(fb$book)[3] = "BLOCK"
-    names(fb$book)[3] = toupper(trt1_label)
+    names(fb$book)[3] = "COL"
+    names(fb$book)[4] = toupper(trt1_label)
   }
   if (design == "BIBD") {
     if(zigzag)fb$book = agricolae::zigzag(fb)
