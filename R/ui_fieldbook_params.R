@@ -4,7 +4,7 @@
 #'
 #' @param name character
 #' @author Reinhard Simon
-#' @export
+#' export
 ui_fieldbook_params <- function(name = "phenotype_fieldbook_design"){
   shiny::conditionalPanel(
     paste0("input.menu == '",name,"'"),

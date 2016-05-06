@@ -2,7 +2,7 @@
 % Please edit documentation in R/design_fieldbook.R
 \name{design_fieldbook}
 \alias{design_fieldbook}
-\title{Generic fieldbook design function}
+\title{design_fieldbook}
 \usage{
 design_fieldbook(design = "(RCBD)", trt1 = letters[1:5], trt2 = NULL,
   r = 2, k = 2, trt1_label = "trt1", trt2_label = "trt2", maxRep = 20,
@@ -43,5 +43,8 @@ a dataframe
 }
 \description{
 Generic fieldbook design function
+}
+\author{
+Reinhard Simon
 }
 

@@ -1,21 +1,23 @@
 
 #' Design a fieldbook.
 #'
-#' @param design statistical design
-#' @param matl list of germplasm
-#' @param reps number of plot repetitions
-#' @param msite logical, is this a mother site in a mother baby trial
-#' @param lbls labels for germplasm
-#' @param checkl list of check germplasm
-#' @param bsize block size
-#' @param adfn name of additional factor
-#' @param adfl levels of additional factor
-#' @param startn start number
-#' @param seed random seed
-#' @param randM randomization method
-#' @author Raul Eyzaguirre, Reinhard Simon
-#' @return data.frame
-#' @export
+#' param design statistical design
+#' param matl list of germplasm
+#' param reps number of plot repetitions
+#' param msite logical, is this a mother site in a mother baby trial
+#' param lbls labels for germplasm
+#' param checkl list of check germplasm
+#' param bsize block size
+#' param adfn name of additional factor
+#' param adfl levels of additional factor
+#' param startn start number
+#' param seed random seed
+#' param randM randomization method
+#' importFrom stringr str_detect
+#' importFrom agricolae design.crd design.rcbd design.lsd
+#' author Raul Eyzaguirre, Reinhard Simon
+#' return data.frame
+#' export
 randomize.design = function(design="(CRD)",
 		matl, # Vector of material list
 		reps, # number of repetitions

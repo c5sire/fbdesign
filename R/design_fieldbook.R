@@ -1,3 +1,6 @@
+
+#' design_fieldbook
+#'
 #' Generic fieldbook design function
 #'
 #' @param design a statistical design
@@ -14,6 +17,7 @@
 #' @param maxRep maximum number of repetitions
 #' @param cont continuouse labeling
 #' @param variables set of variables
+#' @author Reinhard Simon
 #'
 #' @return a dataframe
 #' @export
@@ -28,7 +32,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
   design = stringr::str_extract(design, "([A-Z2]{2,10})")
 
   ids = trt1
-  trt1 = 1:length(trt1)
+  # trt1 = 1:length(trt1)
   # if (design == "LD" && !(length(trt1) %% r == 0 ))
   #   stop("Incorrect paramter combinations for LD design.")
   fb <- switch(design,
@@ -41,11 +45,15 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
      BIBD = agricolae::design.bib(trt1, k, r = NULL, serie = series, maxRep = maxRep, randomization = random,
                                       seed = 0, kinds = "Super-Duper"),
      AD = agricolae::design.alpha(trt1, k, r, serie = series, randomization = random),
-     CD = agricolae::design.cyclic(trt1, k, r, serie = series, randomization = random)
+     CD = agricolae::design.cyclic(trt1, k, r, serie = series, randomization = random),
+     ABD = agricolae::design.dau(trt1, trt2, r, serie = series, randomization = random)
   )
+  #print(head(fb$book))
   #nc = ncol(fb$book)
   names(fb$book)[1] = "PLOT"
   #names(fb$book)[nc] = toupper(trt1_label)
+
+  # PLOT, REP, BLOCK, ENTRY
 
   if (design == "RCBD") {
     if(zigzag) fb$book = agricolae::zigzag(fb)
@@ -60,6 +68,25 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     names(fb$book)[5] = toupper(trt1_label)
 
   }
+  if (design == "ABD") {
+    if(zigzag) fb$book = agricolae::zigzag(fb)
+
+    # get checks back; assume all checks are repeated ina block
+    x = fb$book
+    #print(head(x))
+    cks = table(as.character(x$trt))
+    cks = names(cks[cks > 1])
+    rps = as.integer(x$block)
+    y = cbind(x, rps)
+    y$trt = as.character(y$trt)
+    y$rps = as.integer(y$rps)
+    y[!(y$trt %in% cks), 4 ] = 1
+    y = y[, c(1, 2, 4, 3)]
+    names(y) = c("PLOT", "BLOCK", "REP", "ENTRY")
+    fb$book = y
+  }
+
+
   if (design == "LSD") {
     if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"

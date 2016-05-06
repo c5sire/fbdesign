@@ -8,7 +8,7 @@
 #' @param dom target dom element name
 #' @param values reactive values
 #' @author Reinhard Simon
-#' @export
+#' export
 server_design <- function(input, output, session, dom="hot_fieldbook_design", values){
   output$fbDesign_crop <- shiny::renderUI({
     ct = fbcrops::get_crop_table()

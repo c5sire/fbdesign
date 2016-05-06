@@ -8,38 +8,23 @@ randomize.design(design = "(CRD)", matl, reps, msite = FALSE, lbls,
   checkl = NULL, bsize = 2, adfn = NULL, adfl = NULL, startn = 1,
   seed = 0, randM = "Super-duper")
 }
-\arguments{
-\item{design}{statistical design}
-
-\item{matl}{list of germplasm}
-
-\item{reps}{number of plot repetitions}
-
-\item{msite}{logical, is this a mother site in a mother baby trial}
-
-\item{lbls}{labels for germplasm}
-
-\item{checkl}{list of check germplasm}
-
-\item{bsize}{block size}
-
-\item{adfn}{name of additional factor}
-
-\item{adfl}{levels of additional factor}
-
-\item{startn}{start number}
-
-\item{seed}{random seed}
-
-\item{randM}{randomization method}
-}
-\value{
-data.frame
-}
 \description{
-Design a fieldbook.
-}
-\author{
-Raul Eyzaguirre, Reinhard Simon
+param design statistical design
+param matl list of germplasm
+param reps number of plot repetitions
+param msite logical, is this a mother site in a mother baby trial
+param lbls labels for germplasm
+param checkl list of check germplasm
+param bsize block size
+param adfn name of additional factor
+param adfl levels of additional factor
+param startn start number
+param seed random seed
+param randM randomization method
+importFrom stringr str_detect
+importFrom agricolae design.crd design.rcbd design.lsd
+author Raul Eyzaguirre, Reinhard Simon
+return data.frame
+export
 }
 
