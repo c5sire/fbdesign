@@ -1,5 +1,5 @@
 # create excel template for sweetpotato
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #
 # format_excel_from <- function(fb, crop = "sweetpotato", template_type = "CloneSelector"){
 #   if(template_type == "CloneSelector"){
