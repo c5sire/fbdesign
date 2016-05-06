@@ -97,7 +97,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     names(fb$book)[3] = toupper(trt1_label)
   }
   if (design == "CRD" | design == "NRD") {
-    if(zigzag)fb$book = agricolae::zigzag(fb)
+    #if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = toupper(trt1_label)
   }

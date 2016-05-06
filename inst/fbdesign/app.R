@@ -68,11 +68,11 @@ design_conditional_panels <- function(){
       ",
       shiny::checkboxInput("designFieldbook_first", "Randomize first repetition", TRUE )
     )
-    ,
-    shiny::conditionalPanel(
-      "input.designFieldbook == 'RCBD'",
-      shiny::checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
-    )
+    # ,
+    # shiny::conditionalPanel(
+    #   "input.designFieldbook == 'RCBD'",
+    #   shiny::checkboxInput("designFieldbook_cont", "Continuous numbering of plots", FALSE)
+    # )
 
   )
 }
@@ -103,7 +103,11 @@ fb_design <- function(){
                   # check parameter combinations
   ),
   shiny::tabPanel("Labeling", value = "labeling",icon = shiny::icon("tags"),
-                  shiny::checkboxInput("designFieldbook_zigzag", "Zigzag", TRUE),
+                  shiny::conditionalPanel(
+                    "input.designFieldbook == 'RCBD' |
+                     input.designFieldbook == 'ABD'",
+                  shiny::checkboxInput("designFieldbook_zigzag", "Zigzag", TRUE)
+                  ),
                   shiny::radioButtons("designFieldbook_serie", "Label series:",
                                       #get_series_labels(), "101, 102, ...", #get_series_labels()[[2]],
                                       1:3, 2,
@@ -116,7 +120,13 @@ fb_design <- function(){
 
   ),
   shiny::tabPanel("Book", value = "designBook", icon = shiny::icon("table"),
-            DT::dataTableOutput("fieldbook")
+                  tabBox(title = "Export table",width = 3,
+                         HTML("downloads")
+                         ),
+                  tabBox(title= "Draft table", width = 9,
+                         DT::dataTableOutput("fieldbook")
+                         )
+
   )
   )
 }
@@ -150,6 +160,7 @@ shinyApp(
       mf = parseFilePaths(volumes, input$file)$datapath
       mf = as.character(mf)
       #print(mf)
+      if(length(mf)==0) return("")
       mf
     })
     output$designFilepath <- renderPrint({designFile()})
@@ -158,8 +169,8 @@ shinyApp(
     design_raw <- reactive({
       bks = designFile()
       if(length(bks)==0) return(NULL)
-      gtLst1 = readxl::read_excel(bks, "List1")
-      gtLst2 = readxl::read_excel(bks, "List2")
+      gtLst1 = readxl::read_excel(bks, input$dfGt1)
+      gtLst2 = readxl::read_excel(bks, input$dfGt2)
       trtLst = readxl::read_excel(bks, "Traits")
       #print(head(gtLst1))
       list(gtLst1, gtLst2, trtLst)
@@ -174,7 +185,8 @@ shinyApp(
     })
 
     output$designFieldbook_traits <- renderUI({
-      selectInput("dfTrt", "Trait list", c("Traits"), 1)
+      trts = design_raw()[[3]]$id
+      selectizeInput("dfTrt", "Trait list", trts, selected = 1, multiple = TRUE)
     })
 
 #observe({
@@ -193,19 +205,10 @@ shinyApp(
       # print(x[3]$id)
 
       if(length(x)==0) return(NULL)
-      # print(input$designFieldbook)
-      # print(x[[1]]$ID1)
-      # print(x[[2]]$ID1)
-      # print(x[[3]]$id)
-      # print(input$designFieldbook_r)
-      # print(input$designFieldbook_k)
-      #print("random")
-      #print(str(input$designFieldbook_random))
-      # print(str(input$designFieldbook_zigzag))
       fbdesign::design_fieldbook(input$designFieldbook,
                                  trt1 = x[[1]]$ID1,
                                  trt2 = x[[2]]$ID1,
-                                 variables = x[[3]]$id,
+                                 variables = input$dfTrt,
                                  r = as.integer(input$designFieldbook_r),
                                  k = as.integer(input$designFieldbook_k),
                                  series = as.integer(input$designFieldbook_serie),
