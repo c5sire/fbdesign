@@ -104,9 +104,9 @@ designDialog <- function(){
                                                 # Breeding program
                                                 shiny::uiOutput("fbDesign_program", inline = TRUE),
                                                 # Breeding phase
-                                                shiny::uiOutput("fbDesign_phase", inline = TRUE),
-                                                shiny::uiOutput("fbDesign_factor2", inline = TRUE),
-                                                shiny::uiOutput("fbDesign_variables", inline = TRUE)
+                                                shiny::uiOutput("fbDesign_phase", inline = TRUE)
+                                                #shiny::uiOutput("fbDesign_factor2", inline = TRUE),
+                                                #shiny::uiOutput("fbDesign_variables", inline = TRUE)
 
                                        ),
                                        shiny::tabPanel("Project", value = "project", icon = shiny::icon("book"),
