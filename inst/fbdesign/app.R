@@ -120,10 +120,10 @@ fb_design <- function(){
 
   ),
   shiny::tabPanel("Book", value = "designBook", icon = shiny::icon("table"),
-                  tabBox(title = "Export table",width = 3,
-                         HTML("downloads")
+                  sidebarPanel(width = 3,
+                         downloadButton("exportExcel", "Export to Excel")
                          ),
-                  tabBox(title= "Draft table", width = 9,
+                  mainPanel(width = 9,
                          DT::dataTableOutput("fieldbook")
                          )
 
@@ -186,11 +186,12 @@ shinyApp(
 
     output$designFieldbook_traits <- renderUI({
       trts = design_raw()[[3]]$id
-      selectizeInput("dfTrt", "Trait list", trts, selected = 1, multiple = TRUE)
+      selectizeInput("dfTrt", "Trait list", trts, selected = TRUE, multiple = TRUE)
     })
 
 #observe({
-    output$fieldbook <- DT::renderDataTable({
+
+    fieldbook <- reactive({
       #print(input$fbaInput)
       x = NULL
       withProgress(message = "Loading fieldbook ...",
@@ -213,10 +214,15 @@ shinyApp(
                                  k = as.integer(input$designFieldbook_k),
                                  series = as.integer(input$designFieldbook_serie),
                                  random = as.logical(input$designFieldbook_random),
-                                zigzag = as.logical(input$designFieldbook_zigzag),
+                                 zigzag = as.logical(input$designFieldbook_zigzag),
                                  first = as.logical(input$designFieldbook_first),
-                                cont = as.logical(input$designFieldbook_cont)
+                                 cont = as.logical(input$designFieldbook_cont)
       )
+
+    })
+
+    output$fieldbook <- DT::renderDataTable({
+      fieldbook()
 
     },  server = FALSE,  #extensions = 'FixedColumns',
 
@@ -224,6 +230,14 @@ shinyApp(
     options = list(scrollX = TRUE ))
 #})
 
+
+    output$exportExcel <- downloadHandler("Fieldbook.xlsx", content = function(file){
+      wb <- openxlsx::createWorkbook()
+      openxlsx::addWorksheet(wb, "Fieldbook")
+      openxlsx::writeData(wb,  sheet = "Fieldbook",fieldbook(), startRow = 1, startCol = 1,
+                          rowNames = FALSE)
+      openxlsx::saveWorkbook(wb, file )
+    })
 
   }
 )
