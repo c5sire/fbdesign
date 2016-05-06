@@ -32,12 +32,14 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
   design = stringr::str_extract(design, "([A-Z2]{2,10})")
 
   ids = trt1
+
+
   # trt1 = 1:length(trt1)
   # if (design == "LD" && !(length(trt1) %% r == 0 ))
   #   stop("Incorrect paramter combinations for LD design.")
   fb <- switch(design,
      LSD = agricolae::design.lsd(trt1, series, randomization = random, first = first),
-     RCBD = agricolae::design.rcbd(trt1, r, series, randomization = random, first = first),
+     RCBD = agricolae::design.rcbd(trt1, r, series, randomization = random, first = first, continue = cont),
      CRD = agricolae::design.crd(trt1, r, series, randomization = random),
      GLD = agricolae::design.graeco(trt1, trt2, serie = series, randomization = random),
      YD = agricolae::design.youden(trt1, r, serie = series, first = first, randomization = random),
@@ -46,7 +48,8 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
                                       seed = 0, kinds = "Super-Duper"),
      AD = agricolae::design.alpha(trt1, k, r, serie = series, randomization = random),
      CD = agricolae::design.cyclic(trt1, k, r, serie = series, randomization = random),
-     ABD = agricolae::design.dau(trt1, trt2, r, serie = series, randomization = random)
+     ABD = agricolae::design.dau(trt1, trt2, r, serie = series, randomization = random),
+     NRD = agricolae::design.crd(trt1, r=1, serie=series, randomization = FALSE)
   )
   #print(head(fb$book))
   #nc = ncol(fb$book)
@@ -93,7 +96,7 @@ design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
     fb$book = fb$book[, c(1, 2, 4)]
     names(fb$book)[3] = toupper(trt1_label)
   }
-  if (design == "CRD") {
+  if (design == "CRD" | design == "NRD") {
     if(zigzag)fb$book = agricolae::zigzag(fb)
     names(fb$book)[2] = "REP"
     names(fb$book)[3] = toupper(trt1_label)

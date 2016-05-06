@@ -7,8 +7,9 @@
 #' @param session shinyserver session
 #' @param dom target dom element name
 #' @param values reactive values
+#'
 #' @author Reinhard Simon
-#' export
+#' @export
 server_design <- function(input, output, session, dom="hot_fieldbook_design", values){
   output$fbDesign_crop <- shiny::renderUI({
     ct = fbcrops::get_crop_table()
@@ -116,26 +117,27 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
 
   fbdraft <- shiny::reactive({
     try({
-      withProgress(message = 'Calculation in progress',
+      shiny::withProgress(message = 'Calculation in progress',
                    detail = 'This may take a while...', value = 0, {
-                     incProgress(3/15)
+                     shiny::incProgress(3/15)
                      crp <- input$designFieldbook_crop
                      # print(crp)
                      # print(fbglobal::fname_material_lists(crp))
                      # print(input$designFieldbook_trt1)
-                     incProgress(3/15)
-                     fn =file.path(fbglobal::fname_material_lists(crp), input$designFieldbook_trt1)
+                     shiny::incProgress(3/15)
+                     #fn =file.path(fbglobal::fname_material_lists(crp), input$designFieldbook_trt1)
                      # print(fn)
-                     load(fn)
-                     trt1 = table_materials$institutional_number
-                     incProgress(3/15)
+                     #load(fn)
+                     #trt1 = table_materials$institutional_number
+                     trt1 = paste0("CIPN", 100000:100033)
+                     shiny::incProgress(3/15)
                      mdl = input$designFieldbook_module
                      mdl = stringr::str_extract(mdl, "([A-Z]{2})")[[1]]
                      vars = fbmodule::get_module_table(crp)
                      vars = vars[vars$module == mdl, "variable"]
                      # print(trt1)
                      # print(input$designFieldbook)
-                     incProgress(3/15)
+                     shiny::incProgress(3/15)
 
                      fb = design_fieldbook(design = input$designFieldbook,
                                            trt1 = trt1, trt1_label = "GENOTYPE",

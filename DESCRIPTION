@@ -5,7 +5,7 @@ Authors@R: person("Reinhard", "Simon", email = "r.simon@cgiar.org", role = c("au
 Description: Creates a fieldbook.
 Depends:
     R (>= 3.2.2)
-Imports: agricolae, stringr
+Imports: agricolae, stringr, openxlsx
 Suggests: shiny,
   shinydashboard,
   shinyjs,

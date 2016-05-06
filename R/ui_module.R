@@ -212,7 +212,7 @@ designDialog <- function(){
 #' @param title display title
 #' @param name a reference name
 #' @param output name of output element
-#' export
+#' @export
 ui_fieldbook <- function(type = "tab", title = "Design field book",
                          name = "phenotype_fieldbook_design",
                          output = "hot_fieldbook_design"){

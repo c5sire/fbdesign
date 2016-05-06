@@ -14,8 +14,7 @@ ui_fieldbook(type = "tab", title = "Design field book",
 
 \item{name}{a reference name}
 
-\item{output}{name of output element
-export}
+\item{output}{name of output element}
 }
 \description{
 returns a re-usable user interface element

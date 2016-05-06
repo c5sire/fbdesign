@@ -8,10 +8,16 @@ library(dplyr)
 library(fbmet)
 library(fbhelp)
 
-design_choices = c("RCBD", "CRD", "ABD")
+design_choices = c("RCBD", "CRD", "ABD", "NRD")
 
 design_conditional_panels <- function(){
   tagList(
+
+    shiny::conditionalPanel(
+      "input.designFieldbook != 'NRD'
+      ",
+    shiny::checkboxInput("designFieldbook_random", "Use randomization", TRUE)
+    ),
     shiny::conditionalPanel(
       "input.designFieldbook == 'RCBD' |
       input.designFieldbook == 'CRD' |
@@ -89,7 +95,7 @@ fb_design <- function(){
   ),
   shiny::tabPanel("Statistical design", value = "design", icon = shiny::icon("pie-chart"),
                   shiny::selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
-                  shiny::checkboxInput("designFieldbook_random", "Use randomization", TRUE),
+
                   design_conditional_panels()
                   # 2nd factor from ontology
                   # 2nd genotype list of checks
@@ -109,8 +115,8 @@ fb_design <- function(){
                   )
 
   ),
-  shiny::tabPanel("Book", value = "designBook", icon = shiny::icon("table")
-
+  shiny::tabPanel("Book", value = "designBook", icon = shiny::icon("table"),
+            DT::dataTableOutput("fieldbook")
   )
   )
 }
@@ -148,14 +154,15 @@ shinyApp(
     })
     output$designFilepath <- renderPrint({designFile()})
 
+
     design_raw <- reactive({
       bks = designFile()
       if(length(bks)==0) return(NULL)
       gtLst1 = readxl::read_excel(bks, "List1")
       gtLst2 = readxl::read_excel(bks, "List2")
       trtLst = readxl::read_excel(bks, "Traits")
-      print(head(gtLst1))
-      c(gtLst1, gtLst2, trtLst)
+      #print(head(gtLst1))
+      list(gtLst1, gtLst2, trtLst)
     })
 
     output$designFieldbook_genotypes1 <- renderUI({
@@ -169,5 +176,51 @@ shinyApp(
     output$designFieldbook_traits <- renderUI({
       selectInput("dfTrt", "Trait list", c("Traits"), 1)
     })
+
+#observe({
+    output$fieldbook <- DT::renderDataTable({
+      #print(input$fbaInput)
+      x = NULL
+      withProgress(message = "Loading fieldbook ...",
+                   detail = "This may take a while ...", value = 1, max = 4, {
+                     try({
+                       x <- design_raw()
+
+                     })
+                   })
+      # print(x[1]$ID1)
+      # print(x[2]$ID1)
+      # print(x[3]$id)
+
+      if(length(x)==0) return(NULL)
+      # print(input$designFieldbook)
+      # print(x[[1]]$ID1)
+      # print(x[[2]]$ID1)
+      # print(x[[3]]$id)
+      # print(input$designFieldbook_r)
+      # print(input$designFieldbook_k)
+      #print("random")
+      #print(str(input$designFieldbook_random))
+      # print(str(input$designFieldbook_zigzag))
+      fbdesign::design_fieldbook(input$designFieldbook,
+                                 trt1 = x[[1]]$ID1,
+                                 trt2 = x[[2]]$ID1,
+                                 variables = x[[3]]$id,
+                                 r = as.integer(input$designFieldbook_r),
+                                 k = as.integer(input$designFieldbook_k),
+                                 series = as.integer(input$designFieldbook_serie),
+                                 random = as.logical(input$designFieldbook_random),
+                                zigzag = as.logical(input$designFieldbook_zigzag),
+                                 first = as.logical(input$designFieldbook_first),
+                                cont = as.logical(input$designFieldbook_cont)
+      )
+
+    },  server = FALSE,  #extensions = 'FixedColumns',
+
+    selection = list(mode = 'single', target = 'column'),
+    options = list(scrollX = TRUE ))
+#})
+
+
   }
 )
