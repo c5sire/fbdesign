@@ -22,15 +22,15 @@ export_frm <- function(frm, tpl_id, out = "out.xls", sheet = "Fieldbook", start_
 
 ###############################################
 # get germplasm list
-gl = system.file("example/sweetpotato-list1.xlsx", package = "fbdesign")
-gl = readxl::read_excel(gl)
-
-# get a design
-fd = fbdesign::design_fieldbook(trt1 = gl$Name, r = 3, k = 1, trt1_label = "GENOTYPE")
-
-# get template for crop
-tt = system.file("templates/SPYL-template.xls", package = "fbdesign")
-frm = format_excel_from(fd)
+# gl = system.file("example/sweetpotato-list1.xlsx", package = "fbdesign")
+# gl = readxl::read_excel(gl)
+#
+# # get a design
+# fd = fbdesign::design_fieldbook(trt1 = gl$Name, r = 3, k = 1, trt1_label = "GENOTYPE")
+#
+# # get template for crop
+# tt = system.file("templates/SPYL-template.xls", package = "fbdesign")
+# frm = format_excel_from(fd)
 
 #frm = export_frm(fd, tt)
 

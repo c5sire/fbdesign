@@ -14,7 +14,6 @@
 #' @param maxRep maximum number of repetitions
 #' @param cont continuouse labeling
 #' @param variables set of variables
-#'
 #' @return a dataframe
 #' @export
 design_fieldbook <- function(design = "(RCBD)", trt1 = letters[1:5], trt2=NULL,
