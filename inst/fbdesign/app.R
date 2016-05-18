@@ -186,7 +186,7 @@ shinyApp(
 
     output$designFieldbook_traits <- renderUI({
       trts = design_raw()[[3]]$id
-      selectizeInput("dfTrt", "Trait list", trts, selected = TRUE, multiple = TRUE)
+      selectizeInput("dfTrt", "Trait list", trts, selected = trts, multiple = TRUE)
     })
 
 #observe({

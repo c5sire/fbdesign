@@ -19,7 +19,9 @@ Suggests: shiny,
   fbprogram,
   fbprstages,
   fbsites,
-  openxlsx
+  openxlsx,
+  DT
 License: GPL-3
 LazyData: true
 RoxygenNote: 5.0.1
+Remotes: rstudio/DT
