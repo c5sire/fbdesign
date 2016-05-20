@@ -8,7 +8,19 @@ library(dplyr)
 library(fbmet)
 library(fbhelp)
 
+# design_choices = list("RCBD" = "Randomized Complete Block Design",
+#                    "CRD" = "Completely Randomized Design",
+#                    "ABD" = "Augmented Block Design",
+#                    "NRD" = "Non-Randomized Design")
+
+
 design_choices = c("RCBD", "CRD", "ABD", "NRD")
+
+design_choices = list("Randomized Complete Block Design" = "RCBD",
+                      "Completely Randomized Design" = "CRD" ,
+                      "Augmented Block Design" = "ABD" ,
+                      "Non-Randomized Design" = "NRD" )
+
 
 design_conditional_panels <- function(){
   tagList(
@@ -80,27 +92,50 @@ design_conditional_panels <- function(){
 
 fb_design <- function(){
   tabsetPanel( id = "fbDesignNav",
-   shiny::tabPanel("Sources", value = "designLists", icon = shiny::icon("list"),
-                   shinyFiles::shinyFilesButton('file', 'File select',
-                                                'Please select a file', FALSE
-                   ),
-                   uiOutput("designFilepath")
-   ),
-  shiny::tabPanel("Plants", value = "plants", icon = shiny::icon("star"),
-                  shiny::uiOutput("designFieldbook_genotypes1", inline = TRUE),
-                  shiny::uiOutput("designFieldbook_genotypes2", inline = TRUE)
-  ),
-  shiny::tabPanel("Traits", value = "traits", icon = shiny::icon("star"),
-                  shiny::uiOutput("designFieldbook_traits", inline = TRUE)
-  ),
-  shiny::tabPanel("Statistical design", value = "design", icon = shiny::icon("pie-chart"),
-                  shiny::selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
+   # shiny::tabPanel("Sources", value = "designLists", icon = shiny::icon("list"),
+   #                 shinyFiles::shinyFilesButton('file', 'File select',
+   #                                              'Please select a file', FALSE
+   #                 ),
+   #                 uiOutput("designFilepath")
+   # ),
+   shiny::tabPanel("Statistical design", value = "design", icon = shiny::icon("bar-chart-o"),
+                   shiny::selectInput("designFieldbook", "Design method:", design_choices, multiple = FALSE),
 
-                  design_conditional_panels()
-                  # 2nd factor from ontology
-                  # 2nd genotype list of checks
-                  # genetic designs
-                  # check parameter combinations
+                   design_conditional_panels()
+                   # 2nd factor from ontology
+                   # 2nd genotype list of checks
+                   # genetic designs
+                   # check parameter combinations
+   ),
+
+  shiny::tabPanel("Plants", value = "plants", icon = shiny::icon("leaf"),
+                  shiny::conditionalPanel(
+                    "input.designFieldbook == 'ABD'",
+                    shiny::uiOutput("designFieldbook_genotypes1", inline = TRUE)
+                  ),
+                  shiny::uiOutput("designFieldbook_genotypes2", inline = TRUE),
+                  shinyFiles::shinyFilesButton('file', 'File select',
+                                               'Please select a file', FALSE
+                  )#,
+                  #uiOutput("designFilepath")
+  ),
+  shiny::tabPanel("Treatments", value = "treatments", icon = shiny::icon("wrench")
+  ),
+  shiny::tabPanel("Traits", value = "traits", icon = shiny::icon("eye"),
+                  fluidRow(
+                    column(4,
+                           shiny::uiOutput("designFieldbook_traits", inline = TRUE)
+                           ),
+                    column(8,
+                           shiny::uiOutput("designFieldbook_traits_sub", inline = TRUE),
+                           shiny::uiOutput("designFieldbook_traits_sub_conf", inline = TRUE),
+                           rhandsontable::rHandsontableOutput("designFieldbook_traits_sub_table",
+                                                              height = 300),
+                           uiOutput("designFieldbook_traits_labels")
+
+                           )
+                  )
+
   ),
   shiny::tabPanel("Labeling", value = "labeling",icon = shiny::icon("tags"),
                   shiny::conditionalPanel(
@@ -110,7 +145,7 @@ fb_design <- function(){
                   ),
                   shiny::radioButtons("designFieldbook_serie", "Label series:",
                                       #get_series_labels(), "101, 102, ...", #get_series_labels()[[2]],
-                                      1:3, 2,
+                                      1:3, 3,
                                       inline = TRUE)
                   ,
                   shiny::conditionalPanel(
@@ -121,10 +156,18 @@ fb_design <- function(){
   ),
   shiny::tabPanel("Book", value = "designBook", icon = shiny::icon("table"),
                   sidebarPanel(width = 3,
-                         downloadButton("exportExcel", "Export to Excel")
-                         ),
+                         #downloadButton("exportExcel", "Export to Excel")
+                         radioButtons("exportFieldbookFormat", "Export format of fieldbook",
+                                      c("Excel", "Android Fieldbook App"),
+                                      "Excel"),
+
+                         shinyFiles::shinyDirButton("exportFieldbookDir", "Choose export directory",
+                                                    "Export fieldbook"),
+                         verbatimTextOutput('exportDirPath'),
+                         actionButton("exportFBButton", "Export fieldbook(s) to a directory.")
+                  ),
                   mainPanel(width = 9,
-                         DT::dataTableOutput("fieldbook")
+                         DT::dataTableOutput("fieldbookDT")
                          )
 
   )
@@ -156,38 +199,95 @@ shinyApp(
     shinyFileChoose(input, 'file', roots=volumes, session=session,
                     filetypes=c( 'xlsx'))
 
+    #shinyDirChoose(input, 'exportDir', roots=volumes, session=session)
+    shinyDirChoose(input, 'exportFieldbookDir', roots=volumes,
+                   session=session, restrictions=system.file(package='base'))
+
     designFile <- reactive({
+      req(input$file)
       mf = parseFilePaths(volumes, input$file)$datapath
       mf = as.character(mf)
       #print(mf)
       if(length(mf)==0) return("")
       mf
     })
-    output$designFilepath <- renderPrint({designFile()})
+    #output$designFilepath <- renderPrint({designFile()})
+
+    # exportDir <- reactive({
+    #   req(input$exportDir)
+    #   edr = parseDirPath(volumes, input$exportDir)$datapath
+    #   if(length(edr)==0) return("")
+    #   edr
+    # })
 
 
     design_raw <- reactive({
       bks = designFile()
+      #print(bks)
       if(length(bks)==0) return(NULL)
-      gtLst1 = readxl::read_excel(bks, input$dfGt1)
+      #print(input$dfGt1)
       gtLst2 = readxl::read_excel(bks, input$dfGt2)
+      #print(gtLst1)
+      gtLst1 = NULL
+      if(!is.null(input$dfGt1)){
+        gtLst1 = readxl::read_excel(bks, input$dfGt1)
+      }
+
+      #print(gtLst2)
       trtLst = readxl::read_excel(bks, "Traits")
+      #print(trtLst)
       #print(head(gtLst1))
-      list(gtLst1, gtLst2, trtLst)
+      list("List1" = gtLst2, "List2" = gtLst1, "Traits" = trtLst)
     })
 
     output$designFieldbook_genotypes1 <- renderUI({
-      selectInput("dfGt1", "Genotype list 1", c("List1", "List2"), 1)
+      selectInput("dfGt1", "Genotypes: checks", c("List1", "List2"), 1)
     })
 
     output$designFieldbook_genotypes2 <- renderUI({
-      selectInput("dfGt2", "Genotype list 2", c("List1", "List2"), 2)
+      selectInput("dfGt2", "Genotypes: new materials", c("List1", "List2"), 1)
     })
 
     output$designFieldbook_traits <- renderUI({
+      #req(design_raw())
       trts = design_raw()[[3]]$id
-      selectizeInput("dfTrt", "Trait list", trts, selected = trts, multiple = TRUE)
+      selectizeInput("dfTrt", "Trait list", trts, trts, multiple = TRUE)
     })
+
+    output$designFieldbook_traits_sub <- renderUI({
+      #req(design_raw())
+      trts = design_raw()[[3]]$id
+      selectizeInput("dfTrtSub", "Trait list for subsampling", input$dfTrt,  multiple = TRUE)
+    })
+
+    output$designFieldbook_traits_sub_conf <- renderUI({
+      req(input$dfTrtSub)
+      HTML("<h3>Configuration of sub-sampling</h3>")
+    })
+
+    output$designFieldbook_traits_sub_table <- rhandsontable::renderRHandsontable({
+      req(input$dfTrtSub)
+      n = length(input$dfTrtSub)
+      DF = data.frame(trait = input$dfTrtSub,
+                      use_timepoints = rep(TRUE,n),
+                      n_timepoints = factor(rep(1, n), 1:1000),
+                      use_subsamples = rep(FALSE, n),
+                      n_subsamples = factor(rep(1, n), 1:100),
+                      summarize_by = factor(rep("mean", n),
+                                            c("mean", "mode", "min", "sum", "variance"))
+                      )
+      rhandsontable::rhandsontable(DF)
+    })
+
+    output$designFieldbook_traits_labels <- renderPrint({
+      req(input$designFieldbook_traits_sub_table)
+      #print(input$dfTrt)
+      DF = rhandsontable::hot_to_r(input$designFieldbook_traits_sub_table)
+      lbs = replace_vars_subsamples(input$dfTrt, DF)
+      #print(lbs)
+    })
+
+
 
 #observe({
 
@@ -201,15 +301,24 @@ shinyApp(
 
                      })
                    })
-      # print(x[1]$ID1)
-      # print(x[2]$ID1)
-      # print(x[3]$id)
+      #x <- design_raw()
+      #print(str(x))
+       # print(x[[1]]$ID1)
+       # print(x[[2]]$ID1)
+       # print(x[[3]]$id)
 
       if(length(x)==0) return(NULL)
-      fbdesign::design_fieldbook(input$designFieldbook,
+      DF = NULL
+      if(!is.null(input$designFieldbook_traits_sub_table)){
+        DF = rhandsontable::hot_to_r(input$designFieldbook_traits_sub_table)
+      }
+
+      lbs = replace_vars_subsamples(input$dfTrt, DF)
+
+      fb = fbdesign::design_fieldbook(input$designFieldbook,
                                  trt1 = x[[1]]$ID1,
                                  trt2 = x[[2]]$ID1,
-                                 variables = input$dfTrt,
+                                 variables = lbs, #input$dfTrt,
                                  r = as.integer(input$designFieldbook_r),
                                  k = as.integer(input$designFieldbook_k),
                                  series = as.integer(input$designFieldbook_serie),
@@ -218,26 +327,69 @@ shinyApp(
                                  first = as.logical(input$designFieldbook_first),
                                  cont = as.logical(input$designFieldbook_cont)
       )
+      #print(str(fb))
+      fb
+
 
     })
 
-    output$fieldbook <- DT::renderDataTable({
+    output$fieldbookDT <- DT::renderDataTable({
+      req(input$dfTrt)
       fieldbook()
 
     },  server = FALSE,  #extensions = 'FixedColumns',
 
     selection = list(mode = 'single', target = 'column'),
-    options = list(scrollX = TRUE ))
-#})
+    options = list(scrollX = TRUE )
+    )
 
+    #})
 
-    output$exportExcel <- downloadHandler("Fieldbook.xlsx", content = function(file){
-      wb <- openxlsx::createWorkbook()
-      openxlsx::addWorksheet(wb, "Fieldbook")
-      openxlsx::writeData(wb,  sheet = "Fieldbook",fieldbook(), startRow = 1, startCol = 1,
-                          rowNames = FALSE)
-      openxlsx::saveWorkbook(wb, file )
+    # observe({
+    #   if(input$exportFBDir > 0){
+    #     #output$exportDirPath <- renderText(function(){
+    #       #list.files(choose.dir())
+    #       print(choose.dir())
+    #     }#)
+    #   #}
+    # })
+
+    output$exportDirPath <- renderPrint({
+      req(input$exportFieldbookDir)
+      #volumes <- c('R Installation'=R.home())
+      parseDirPath(volumes, input$exportFieldbookDir)
+      })
+
+    observeEvent(input$exportFBButton, {
+      ed = parseDirPath(volumes, input$exportFieldbookDir)
+      fn = file.path(ed, "fieldbook.xlsx")
+      if(input$exportFieldbookFormat == "Excel"){
+        wb <- openxlsx::createWorkbook()
+        openxlsx::addWorksheet(wb, "Fieldbook")
+        openxlsx::writeData(wb,  sheet = "Fieldbook",fieldbook(), startRow = 1, startCol = 1,
+                            rowNames = FALSE)
+        openxlsx::saveWorkbook(wb, fn, overwrite = TRUE )
+      }
+
+      if(input$exportFieldbookFormat == "Android Fieldbook App"){
+        write.csv(fieldbook()[, c(1:5)], file.path(ed, "fieldbook.csv"), quote = FALSE, row.names = FALSE)
+        trait_conf <- create_fbtrait_config(fieldbook(), design_raw()[[3]])
+        write.csv(trait_conf, file.path(ed, "fieldbook.trt"), quote = FALSE, row.names = FALSE)
+      }
+
     })
+
+    # output$exportExcel <- downloadHandler("Fieldbook.xlsx", content = function(file){
+    #   wb <- openxlsx::createWorkbook()
+    #   openxlsx::addWorksheet(wb, "Fieldbook")
+    #   openxlsx::writeData(wb,  sheet = "Fieldbook",fieldbook(), startRow = 1, startCol = 1,
+    #                       rowNames = FALSE)
+    #   openxlsx::saveWorkbook(wb, file )
+    # })
+
+    # observeEvent(input$exportFieldbookButton, {
+    #   #print(exportDir())
+    # })
 
   }
 )

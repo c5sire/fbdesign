@@ -1,11 +1,11 @@
 Package: fbdesign
 Title: Creates a fieldbook
-Version: 0.0.1.9006
+Version: 0.0.1.9007
 Authors@R: person("Reinhard", "Simon", email = "r.simon@cgiar.org", role = c("aut", "cre"))
 Description: Creates a fieldbook.
 Depends:
     R (>= 3.2.2)
-Imports: agricolae, stringr
+Imports: agricolae, stringr, magrittr
 Suggests: shiny,
   shinydashboard,
   shinyjs,
