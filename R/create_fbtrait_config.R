@@ -45,8 +45,8 @@ create_fbtrait_config <- function(fieldbook, dictionary){
   for(i in 1:dd_n) {
     if(stringr::str_detect(dd$format[i], "categorical")){
       cs = paste(dd[i, 11:(dd_m - 2)])
-      cs = stringr::str_split(cs, "=") %>% unlist
-      cs = cs[seq(2,length(cs), 2)]
+      #cs = stringr::str_split(cs, "=") %>% unlist
+      #cs = cs[seq(2,length(cs), 2)]
       cs = cs[cs!="NA"]
       cs = stringr::str_trim(cs)
       dd[i, "cats"] = paste(cs, collapse = "/")
