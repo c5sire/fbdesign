@@ -170,6 +170,7 @@ server_design <- function(input, output, session, dom="hot_fieldbook_design", va
     try({
       fn = paste0(fbdesign_id(), ".rda")
       fp = file.path(fbglobal::fname_fieldbooks(input$designFieldbook_crop), fn)
+
       # print(fn)
       # print(fp)
       # print(str(fb))
